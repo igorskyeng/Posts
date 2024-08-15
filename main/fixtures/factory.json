@@ -1,0 +1,38 @@
+[
+{
+  "model": "main.factory",
+  "pk": 1,
+  "fields": {
+    "name": "Завод 1",
+    "email": "Factory1@yandex.ru",
+    "country": "Россия",
+    "city": "Москва",
+    "street": "Ленина",
+    "house_number": "1",
+    "name_product": "Продукт 1",
+    "model": "Модель 1",
+    "market_launch_date": "2024-08-15T03:25:30Z",
+    "debt": "0.000",
+    "time_of_creation": "2024-08-15T03:26:17.936Z",
+    "user": 1
+  }
+},
+{
+  "model": "main.factory",
+  "pk": 2,
+  "fields": {
+    "name": "Завод 2",
+    "email": "Factory2@yandex.ru",
+    "country": "Россия",
+    "city": "Москва",
+    "street": "Ленина",
+    "house_number": "2",
+    "name_product": "Продукт 2",
+    "model": "Модель 2",
+    "market_launch_date": "2024-08-15T03:25:30Z",
+    "debt": "0.000",
+    "time_of_creation": "2024-08-15T03:26:17.936Z",
+    "user": 1
+  }
+}
+]

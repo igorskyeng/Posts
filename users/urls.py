@@ -1,23 +1,17 @@
-from django.contrib.auth.views import LogoutView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.urls import path
-from django.views.generic import TemplateView
-
-from users.views import RegisterView, ProfileView, PasswordRecoveryView, UserLoginView, verification
-
 from users.apps import UsersConfig
-
+from users.views import (UserListAPIView, UserCreateAPIView, UserRetrieveAPIView, UserUpdateAPIView, UserDestroyAPIView)
 
 app_name = UsersConfig.name
 
 urlpatterns = [
-    path('', UserLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
-    path('register/', RegisterView.as_view(), name='register'),
-    path('register/confirm/<str:token>/', verification, name='verification'),
-    path('profile/', ProfileView.as_view(), name='profile'),
-    path('password_recovery/', PasswordRecoveryView.as_view(), name='password_recovery'),
-    path('message_verification/', TemplateView.as_view(template_name='users/message_verification.html'),
-         name='message_verification'),
-    path('successfully/', TemplateView.as_view(template_name='users/successfully.html'), name='successfully'),
-    path('unsuccessfully/', TemplateView.as_view(template_name='users/unsuccessfully.html'), name='unsuccessfully'),
+    path('user/create/', UserCreateAPIView.as_view(), name='user_create'),
+    path('user/', UserListAPIView.as_view(), name='user_list'),
+    path('user/<int:pk>/', UserRetrieveAPIView.as_view(), name='user_get'),
+    path('user/update/<int:pk>/', UserUpdateAPIView.as_view(), name='user_update'),
+    path('user/delete/<int:pk>/', UserDestroyAPIView.as_view(), name='user_delete'),
+
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
 ]

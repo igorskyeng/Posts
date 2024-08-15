@@ -1,259 +1,192 @@
-import random
-
-from django.conf import settings
-from django.core.cache import cache
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.views.generic.base import TemplateView
-from django.urls import reverse_lazy, reverse
-from django.forms import inlineformset_factory
-
-from pytils.translit import slugify
-
+from rest_framework import generics, filters
+from rest_framework.permissions import IsAuthenticated
 from main.models import Factory, RetailNetwork, IndividualEntrepreneur
-from main.forms import FactoryAddForm, RetailNetworkAddForm, IndividualEntrepreneurAddForm
-
-
-class HomeListView(ListView):
-    model = Factory
-    template_name = 'main/home_list.html'
-
-    def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
-        context_data['factory'] = Factory.objects.all().count()
-        context_data['retail_network'] = RetailNetwork.objects.all().count()
-        context_data['IE'] = IndividualEntrepreneur.objects.all().count()
-        context_data['title'] = 'Главная'
-        return context_data
-
-
-class FactoryCreateView(LoginRequiredMixin, CreateView):
-    model = Factory
-    form_class = FactoryAddForm
-    success_url = reverse_lazy('main:factory_list')
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-
-        context_data['title'] = 'Добавление завода'
-
-        return context_data
-
-    def form_valid(self, form):
-        factory = form.save()
-        factory.user = self.request.user
-        factory.save()
-
-        return super().form_valid(form)
-
-
-class FactoryListView(LoginRequiredMixin, ListView):
-    model = Factory
-    template_name = "main/factory_list.html"
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        factory = Factory.objects.all()
-
-        context_data['object_groups_user'] = str(self.request.user.groups.filter(name='manager'))
-        context_data['object_groups'] = '<QuerySet [<Group: manager>]>'
-        context_data['object_list'] = factory
-        context_data['title'] = 'Заводы'
-
-        return context_data
-
-
-class FactoryDetailtView(LoginRequiredMixin, DetailView):
-    model = Factory
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-
-        context_data['title'] = 'Просмотр завода'
-
-        return context_data
-
-
-class FactoryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Factory
-    form_class = FactoryAddForm
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Редактирование завода'
-
-        return context_data
-
-    def test_func(self):
-        if self.get_object().user == self.request.user or self.request.user.is_superuser:
-            return True
-
-        else:
-            return self.handle_no_permission()
-
-    def get_success_url(self):
-        return reverse('main:factory_detail', args=[self.kwargs.get('pk')])
-
-
-class FactoryDeleteView(LoginRequiredMixin, DeleteView):
-    model = Factory
-    success_url = reverse_lazy('main:factory_list')
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Удаление завода'
-
-        return context_data
-
-
-class RetailNetworkCreateView(LoginRequiredMixin, CreateView):
-    model = RetailNetwork
-    form_class = RetailNetworkAddForm
-    success_url = reverse_lazy('main:retail_network_list')
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Добавление розничной сети'
-
-        return context_data
-
-    def form_valid(self, form):
-        retail_network = form.save()
-        retail_network.user = self.request.user
-        retail_network.save()
-
-        return super().form_valid(form)
-
-
-class RetailNetworkListView(LoginRequiredMixin, ListView):
-    model = RetailNetwork
-    template_name = "main/retailnetwork_list.html"
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        retail_network = RetailNetwork.objects.all()
-        context_data['object_groups_user'] = str(self.request.user.groups.filter(name='manager'))
-        context_data['object_groups'] = '<QuerySet [<Group: manager>]>'
-        context_data['object_list'] = retail_network
-        context_data['title'] = 'Розничные сети'
-
-        return context_data
-
-
-class RetailNetworkDetailtView(LoginRequiredMixin, DetailView):
-    model = RetailNetwork
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Просмотр розничных сетей'
-
-        return context_data
-
-
-class RetailNetworkUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = RetailNetwork
-    form_class = RetailNetworkAddForm
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Редактирование розничной сети'
-
-        return context_data
-
-    def test_func(self):
-        if self.get_object().user == self.request.user or self.request.user.is_superuser:
-            return True
-
-        else:
-            return self.handle_no_permission()
-
-    def get_success_url(self):
-        return reverse('main:retail_network_detail', args=[self.kwargs.get('pk')])
-
-
-class RetailNetworkDeleteView(LoginRequiredMixin, DeleteView):
-    model = RetailNetwork
-    success_url = reverse_lazy('main:retail_network_list')
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Удаление розничной сети'
-
-        return context_data
-
-
-class IndividualEntrepreneurCreateView(LoginRequiredMixin, CreateView):
-    model = IndividualEntrepreneur
-    form_class = IndividualEntrepreneurAddForm
-    success_url = reverse_lazy('main:IE_list')
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Добавление ИП'
-
-        return context_data
-
-    def form_valid(self, form):
-        individual_entrepreneur = form.save()
-        individual_entrepreneur.user = self.request.user
-        individual_entrepreneur.save()
-
-        return super().form_valid(form)
-
-
-class IndividualEntrepreneurListView(LoginRequiredMixin, ListView):
-    model = IndividualEntrepreneur
-    template_name = "main/individualentrepreneur_list.html"
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        individual_entrepreneur = IndividualEntrepreneur.objects.all()
-        context_data['object_groups_user'] = str(self.request.user.groups.filter(name='manager'))
-        context_data['object_groups'] = '<QuerySet [<Group: manager>]>'
-        context_data['object_list'] = individual_entrepreneur
-        context_data['title'] = 'Все ИП'
-
-        return context_data
-
-
-class IndividualEntrepreneurDetailtView(LoginRequiredMixin, DetailView):
-    model = IndividualEntrepreneur
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Просмотр всех ИП'
-
-        return context_data
-
-
-class IndividualEntrepreneurUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = IndividualEntrepreneur
-    form_class = IndividualEntrepreneurAddForm
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Редактирование ИП'
-
-        return context_data
-
-    def test_func(self):
-        if self.get_object().user == self.request.user or self.request.user.is_superuser:
-            return True
-
-        else:
-            return self.handle_no_permission()
-
-    def get_success_url(self):
-        return reverse('main:IE_detail', args=[self.kwargs.get('pk')])
-
-
-class IndividualEntrepreneurDeleteView(LoginRequiredMixin, DeleteView):
-    model = IndividualEntrepreneur
-    success_url = reverse_lazy('main:IE_list')
-
-    def get_context_data(self, *args, **kwargs):
-        context_data = super().get_context_data(*args, **kwargs)
-        context_data['title'] = 'Удаление ИП'
-
-        return context_data
+from django_filters import rest_framework as rest_filters
+from main.paginators import Paginator
+from main.permissions import ActiveUser, IsOwner
+from main.serliazers import (FactorySerializers, FactoryUpdateSerializers, RetailNetworkSerializers,
+                             RetailNetworkUpdateSerializers, IndividualEntrepreneurSerializers,
+                             IndividualEntrepreneurUpdateSerializers)
+
+
+class FactoryCreateAPIView(generics.CreateAPIView):
+    """
+    Создание 'Завода'.
+    """
+    serializer_class = FactorySerializers
+    queryset = Factory.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        new_factory = serializer.save()
+        new_factory.user = self.request.user
+        new_factory.save()
+
+
+class FactoryListAPIView(generics.ListAPIView):
+    """
+    Вывод листа заводов.
+    """
+    serializer_class = FactorySerializers
+    permission_classes = [IsAuthenticated & ActiveUser]
+    pagination_class = Paginator
+    queryset = Factory.objects.all()
+
+    # Фильтр по определенной стране.
+    filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ['country']
+
+
+class FactoryRetrieveAPIView(generics.RetrieveAPIView):
+    """
+    Вывод конкретного завода.
+    """
+    serializer_class = FactorySerializers
+    queryset = Factory.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser]
+
+
+class FactoryUpdateAPIView(generics.UpdateAPIView):
+    """
+    Обновление конкретного завода.
+    """
+    serializer_class = FactoryUpdateSerializers
+    queryset = Factory.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+
+    def perform_update(self, serializer):
+        new_factory = serializer.save()
+        new_factory.save()
+
+
+class FactoryDestroyAPIView(generics.DestroyAPIView):
+    """
+    Удаление конкретного завода.
+    """
+    queryset = Factory.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+
+class RetailNetworkCreateAPIView(generics.CreateAPIView):
+    """
+    Создание 'Розничной сети'.
+    """
+    serializer_class = RetailNetworkSerializers
+    queryset = RetailNetwork.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        new_retail_network = serializer.save()
+        new_retail_network.user = self.request.user
+        new_retail_network.save()
+
+
+class RetailNetworkListAPIView(generics.ListAPIView):
+    """
+    Вывод листа розничныйх сетей.
+    """
+    serializer_class = RetailNetworkSerializers
+    permission_classes = [IsAuthenticated & ActiveUser]
+    queryset = RetailNetwork.objects.all()
+    pagination_class = Paginator
+
+    # Фильтр по определенной стране.
+    filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ['country']
+
+
+class RetailNetworkRetrieveAPIView(generics.RetrieveAPIView):
+    """
+    Вывод конкретной розничной сети.
+    """
+    serializer_class = RetailNetworkSerializers
+    queryset = RetailNetwork.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser]
+
+
+class RetailNetworkUpdateAPIView(generics.UpdateAPIView):
+    """
+    Обновление конкретной розничной сети.
+    """
+    serializer_class = RetailNetworkUpdateSerializers
+    queryset = RetailNetwork.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+
+    def perform_update(self, serializer):
+        new_retail_network = serializer.save()
+        new_retail_network.save()
+
+
+class RetailNetworkDestroyAPIView(generics.DestroyAPIView):
+    """
+    Удаление конкретной розничной сети.
+    """
+    queryset = RetailNetwork.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+
+class IndividualEntrepreneurCreateAPIView(generics.CreateAPIView):
+    """
+    Создание 'Индивилдеального предпринимателя'.
+    """
+    serializer_class = IndividualEntrepreneurSerializers
+    queryset = IndividualEntrepreneur.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        new_individual_entrepreneur = serializer.save()
+        new_individual_entrepreneur.user = self.request.user
+        new_individual_entrepreneur.save()
+
+
+class IndividualEntrepreneurListAPIView(generics.ListAPIView):
+    """
+    Вывод листа индивилдеальный предпринимателей.
+    """
+    serializer_class = IndividualEntrepreneurSerializers
+    permission_classes = [IsAuthenticated & ActiveUser]
+    queryset = IndividualEntrepreneur.objects.all()
+    pagination_class = Paginator
+
+    # Фильтр по определенной стране.
+    filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ['country']
+
+
+class IndividualEntrepreneurRetrieveAPIView(generics.RetrieveAPIView):
+    """
+    Вывод конкретного индивилдеального предпринимателя.
+    """
+    serializer_class = IndividualEntrepreneurSerializers
+    queryset = IndividualEntrepreneur.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser]
+
+
+class IndividualEntrepreneurUpdateAPIView(generics.UpdateAPIView):
+    """
+    Обновление конкретного индивилдеального предпринимателя.
+    """
+    serializer_class = IndividualEntrepreneurUpdateSerializers
+    queryset = IndividualEntrepreneur.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+
+    def perform_update(self, serializer):
+        new_individual_entrepreneur = serializer.save()
+        new_individual_entrepreneur.save()
+
+
+class IndividualEntrepreneurDestroyAPIView(generics.DestroyAPIView):
+    """
+    Удаление конкретного индивилдеального предпринимателя.
+    """
+    queryset = IndividualEntrepreneur.objects.all()
+    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+
+    def perform_destroy(self, instance):
+        instance.delete()

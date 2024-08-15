@@ -1,11 +1,13 @@
 from django.db import models
-from datetime import datetime
 from django.conf import settings
 
 NULLABLE = {'blank': True, 'null': True}
 
 
 class Factory(models.Model):
+    """
+    Модель 'Завод'.
+    """
     name = models.CharField(max_length=100, verbose_name='Название завода')
     email = models.EmailField(max_length=150, unique=True, verbose_name='Почта')
     country = models.CharField(max_length=100, verbose_name='Страна')
@@ -15,7 +17,7 @@ class Factory(models.Model):
     name_product = models.CharField(max_length=100, verbose_name='Название продукта')
     model = models.CharField(max_length=100, verbose_name='Модель')
     market_launch_date = models.DateTimeField(verbose_name='Дата выхода продукта на рынок')
-    debt = models.IntegerField(default=0, verbose_name='Задолжность')
+    debt = models.DecimalField(decimal_places=3, max_digits=1000,  verbose_name='Задолжность')
     time_of_creation = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Пользватель', null=True)
 
@@ -29,6 +31,9 @@ class Factory(models.Model):
 
 
 class RetailNetwork(models.Model):
+    """
+    Модель 'Розничная сеть'.
+    """
     name = models.CharField(max_length=100, verbose_name='Название розничной сети')
     email = models.EmailField(max_length=150, unique=True, verbose_name='Почта')
     country = models.CharField(max_length=100, verbose_name='Страна')
@@ -38,8 +43,8 @@ class RetailNetwork(models.Model):
     name_product = models.CharField(max_length=100, verbose_name='Название продукта')
     model = models.CharField(max_length=100, verbose_name='Модель')
     market_launch_date = models.DateTimeField(verbose_name='Дата выхода продукта на рынок')
-    supplier = models.ForeignKey(Factory, verbose_name='Поставщик', on_delete=models.CASCADE)
-    debt = models.IntegerField(default=0, verbose_name='Задолжность')
+    supplier_retail_network = models.ForeignKey(Factory, verbose_name='Поставщик', on_delete=models.CASCADE)
+    debt = models.DecimalField(decimal_places=3, max_digits=1000, verbose_name='Задолжность')
     time_of_creation = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Пользватель', null=True)
 
@@ -53,6 +58,9 @@ class RetailNetwork(models.Model):
 
 
 class IndividualEntrepreneur(models.Model):
+    """
+    Модель 'Индивидуальный предприниматель'.
+    """
     name_IE = models.CharField(max_length=100, verbose_name='Индивидуальный предприниматель')
     email = models.EmailField(max_length=150, unique=True, verbose_name='Почта')
     country = models.CharField(max_length=100, verbose_name='Страна')
@@ -62,8 +70,10 @@ class IndividualEntrepreneur(models.Model):
     name_product = models.CharField(max_length=100, verbose_name='Название продукта')
     model = models.CharField(max_length=100, verbose_name='Модель')
     market_launch_date = models.DateTimeField(verbose_name='Дата выхода продукта на рынок')
-    supplier = models.ForeignKey(RetailNetwork, verbose_name='Поставщик', on_delete=models.CASCADE)
-    debt = models.IntegerField(default=0, verbose_name='Задолжность')
+    supplier_factory = models.ForeignKey(Factory, on_delete=models.CASCADE, verbose_name='Поставщик', **NULLABLE)
+    supplier_retail_network = models.ForeignKey(RetailNetwork, on_delete=models.CASCADE, verbose_name='Поставщик',
+                                                **NULLABLE)
+    debt = models.DecimalField(decimal_places=3, max_digits=1000,  verbose_name='Задолжность')
     time_of_creation = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Пользватель', null=True)
 

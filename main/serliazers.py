@@ -1,62 +1,22 @@
 from rest_framework import serializers
-from main.models import Factory, RetailNetwork, IndividualEntrepreneur
-from main.validators import IndividualEntrepreneurValidator
+from main.models import Post, Comments
+from main.validators import PostValidator
 
 
-class FactorySerializers(serializers.ModelSerializer):
+class PostSerializers(serializers.ModelSerializer):
     """
-    Сериалайзер для вывода всех атрибутов модели 'Завод'.
+    Сериалайзер для вывода всех атрибутов модели 'Пост'.
     """
     class Meta:
-        model = Factory
+        model = Post
         fields = '__all__'
+        validators = [PostValidator(field='autor')]
 
 
-class FactoryUpdateSerializers(serializers.ModelSerializer):
+class CommentsSerializers(serializers.ModelSerializer):
     """
-    Сериалайзер для вывода всех атрибутов модели 'Завод'
-    без возможности изменить поле 'Задолжность'..
-    """
-    class Meta:
-        model = Factory
-        exclude = ['debt']
-
-
-class RetailNetworkSerializers(serializers.ModelSerializer):
-    """
-    Сериалайзер для вывода всех атрибутов модели 'Розничная сеть'.
+    Сериалайзер для вывода всех атрибутов модели 'Комментарии'.
     """
     class Meta:
-        model = RetailNetwork
+        model = Comments
         fields = '__all__'
-
-
-class RetailNetworkUpdateSerializers(serializers.ModelSerializer):
-    """
-    Сериалайзер для вывода всех атрибутов модели 'Розничная сеть'
-    без возможности изменить поле 'Задолжность'..
-    """
-    class Meta:
-        model = RetailNetwork
-        exclude = ['debt']
-
-
-class IndividualEntrepreneurSerializers(serializers.ModelSerializer):
-    """
-    Сериалайзер для вывода всех атрибутов модели 'Индивидуальный предприниматель'.
-    """
-    class Meta:
-        model = IndividualEntrepreneur
-        fields = '__all__'
-        validators = [IndividualEntrepreneurValidator(field='supplier_factory')]
-
-
-class IndividualEntrepreneurUpdateSerializers(serializers.ModelSerializer):
-    """
-    Сериалайзер для вывода всех атрибутов модели 'Индивидуальный предприниматель'
-    без возможности изменить поле 'Задолжность'.
-    """
-    class Meta:
-        model = IndividualEntrepreneur
-        exclude = ['debt']
-        validators = [IndividualEntrepreneurValidator(field='supplier_factory')]

@@ -1,86 +1,45 @@
+from datetime import datetime
 from django.db import models
 from django.conf import settings
 
 NULLABLE = {'blank': True, 'null': True}
 
 
-class Factory(models.Model):
+class Comments(models.Model):
     """
-    Модель 'Завод'.
+    Модель 'Коммунтарии'.
     """
-    name = models.CharField(max_length=100, verbose_name='Название завода')
-    email = models.EmailField(max_length=150, unique=True, verbose_name='Почта')
-    country = models.CharField(max_length=100, verbose_name='Страна')
-    city = models.CharField(max_length=100, verbose_name='Город')
-    street = models.CharField(max_length=100, verbose_name='Улица')
-    house_number = models.CharField(max_length=100, verbose_name='Номер дома')
-    name_product = models.CharField(max_length=100, verbose_name='Название продукта')
-    model = models.CharField(max_length=100, verbose_name='Модель')
-    market_launch_date = models.DateTimeField(verbose_name='Дата выхода продукта на рынок')
-    debt = models.DecimalField(decimal_places=3, max_digits=1000,  verbose_name='Задолжность')
-    time_of_creation = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Пользватель', null=True)
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                      verbose_name='Автор Комментария', null=True)
+    text = models.TextField(verbose_name='Текст')
+    date_of_creation = models.DateTimeField(verbose_name='Дата создания', default=datetime.now())
+    date_of_editing = models.DateTimeField(verbose_name='Дата редактирования', **NULLABLE)
 
     def __str__(self):
-        return self.name
+        return str(self.autor)
 
     class Meta:
-        verbose_name = 'Завод'
-        verbose_name_plural = 'Заводы'
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
         ordering = ('id',)
 
 
-class RetailNetwork(models.Model):
+class Post(models.Model):
     """
-    Модель 'Розничная сеть'.
+    Модель 'Посты'.
     """
-    name = models.CharField(max_length=100, verbose_name='Название розничной сети')
-    email = models.EmailField(max_length=150, unique=True, verbose_name='Почта')
-    country = models.CharField(max_length=100, verbose_name='Страна')
-    city = models.CharField(max_length=100, verbose_name='Город')
-    street = models.CharField(max_length=100, verbose_name='Улица')
-    house_number = models.CharField(max_length=100, verbose_name='Номер дома')
-    name_product = models.CharField(max_length=100, verbose_name='Название продукта')
-    model = models.CharField(max_length=100, verbose_name='Модель')
-    market_launch_date = models.DateTimeField(verbose_name='Дата выхода продукта на рынок')
-    supplier_retail_network = models.ForeignKey(Factory, verbose_name='Поставщик', on_delete=models.CASCADE)
-    debt = models.DecimalField(decimal_places=3, max_digits=1000, verbose_name='Задолжность')
-    time_of_creation = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Пользватель', null=True)
+    title = models.CharField(max_length=100, verbose_name='Зоголовок')
+    text = models.TextField(verbose_name='Текст')
+    image = models.ImageField(upload_to='main/', verbose_name='Изображение', **NULLABLE)
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Автор', null=True)
+    comments = models.ForeignKey(Comments, verbose_name='Комментарии', on_delete=models.CASCADE, **NULLABLE)
+    date_of_creation = models.DateTimeField(verbose_name='Дата создания', default=datetime.now())
+    date_of_editing = models.DateTimeField(verbose_name='Дата редактирования', **NULLABLE)
 
     def __str__(self):
-        return self.name
+        return self.title
 
     class Meta:
-        verbose_name = 'Розничная сеть'
-        verbose_name_plural = 'Розничные сети'
-        ordering = ('id',)
-
-
-class IndividualEntrepreneur(models.Model):
-    """
-    Модель 'Индивидуальный предприниматель'.
-    """
-    name_IE = models.CharField(max_length=100, verbose_name='Индивидуальный предприниматель')
-    email = models.EmailField(max_length=150, unique=True, verbose_name='Почта')
-    country = models.CharField(max_length=100, verbose_name='Страна')
-    city = models.CharField(max_length=100, verbose_name='Город')
-    street = models.CharField(max_length=100, verbose_name='Улица')
-    house_number = models.CharField(max_length=100, verbose_name='Номер дома')
-    name_product = models.CharField(max_length=100, verbose_name='Название продукта')
-    model = models.CharField(max_length=100, verbose_name='Модель')
-    market_launch_date = models.DateTimeField(verbose_name='Дата выхода продукта на рынок')
-    supplier_factory = models.ForeignKey(Factory, on_delete=models.CASCADE, verbose_name='Поставщик', **NULLABLE)
-    supplier_retail_network = models.ForeignKey(RetailNetwork, on_delete=models.CASCADE, verbose_name='Поставщик',
-                                                **NULLABLE)
-    debt = models.DecimalField(decimal_places=3, max_digits=1000,  verbose_name='Задолжность')
-    time_of_creation = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, verbose_name='Пользватель', null=True)
-
-    def __str__(self):
-        return self.name_IE
-
-    class Meta:
-        verbose_name = 'Индивидуальный предприниматель'
-        verbose_name_plural = 'Индивидуальные предприниматели'
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
         ordering = ('id',)

@@ -1,96 +1,96 @@
+from datetime import datetime
 from rest_framework import generics, filters
-from rest_framework.permissions import IsAuthenticated
-from main.models import Factory, RetailNetwork, IndividualEntrepreneur
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from main.models import Post, Comments
 from django_filters import rest_framework as rest_filters
 from main.paginators import Paginator
-from main.permissions import ActiveUser, IsOwner
-from main.serliazers import (FactorySerializers, FactoryUpdateSerializers, RetailNetworkSerializers,
-                             RetailNetworkUpdateSerializers, IndividualEntrepreneurSerializers,
-                             IndividualEntrepreneurUpdateSerializers)
+from main.permissions import IsOwner, Admin
+from main.serliazers import PostSerializers, CommentsSerializers
 
 
-class FactoryCreateAPIView(generics.CreateAPIView):
+class PostCreateAPIView(generics.CreateAPIView):
     """
-    Создание 'Завода'.
+    Создание 'Поста'.
     """
-    serializer_class = FactorySerializers
-    queryset = Factory.objects.all()
+    serializer_class = PostSerializers
+    queryset = Post.objects.all()
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        new_factory = serializer.save()
-        new_factory.user = self.request.user
-        new_factory.save()
+        new_post = serializer.save()
+        new_post.autor = self.request.user
+        new_post.save()
 
 
-class FactoryListAPIView(generics.ListAPIView):
+class PostListAPIView(generics.ListAPIView):
     """
-    Вывод листа заводов.
+    Вывод листа постов.
     """
-    serializer_class = FactorySerializers
-    permission_classes = [IsAuthenticated & ActiveUser]
+    serializer_class = PostSerializers
+    permission_classes = [AllowAny]
     pagination_class = Paginator
-    queryset = Factory.objects.all()
+    queryset = Post.objects.all()
 
     # Фильтр по определенной стране.
     filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter)
     search_fields = ['country']
 
 
-class FactoryRetrieveAPIView(generics.RetrieveAPIView):
+class PostRetrieveAPIView(generics.RetrieveAPIView):
     """
-    Вывод конкретного завода.
+    Вывод поста.
     """
-    serializer_class = FactorySerializers
-    queryset = Factory.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser]
+    serializer_class = PostSerializers
+    queryset = Post.objects.all()
+    permission_classes = [AllowAny]
 
 
-class FactoryUpdateAPIView(generics.UpdateAPIView):
+class PostUpdateAPIView(generics.UpdateAPIView):
     """
-    Обновление конкретного завода.
+    Обновление поста.
     """
-    serializer_class = FactoryUpdateSerializers
-    queryset = Factory.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+    serializer_class = PostSerializers
+    queryset = Post.objects.all()
+    permission_classes = [IsAuthenticated & (Admin | IsOwner)]
 
     def perform_update(self, serializer):
-        new_factory = serializer.save()
-        new_factory.save()
+        new_post = serializer.save()
+        new_post.date_of_editing = datetime.now()
+        new_post.save()
 
 
-class FactoryDestroyAPIView(generics.DestroyAPIView):
+class PostDestroyAPIView(generics.DestroyAPIView):
     """
-    Удаление конкретного завода.
+    Удаление поста.
     """
-    queryset = Factory.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+    queryset = Post.objects.all()
+    permission_classes = [IsAuthenticated & (Admin | IsOwner)]
 
     def perform_destroy(self, instance):
         instance.delete()
 
 
-class RetailNetworkCreateAPIView(generics.CreateAPIView):
+class CommentsCreateAPIView(generics.CreateAPIView):
     """
-    Создание 'Розничной сети'.
+    Создание 'Комментария'.
     """
-    serializer_class = RetailNetworkSerializers
-    queryset = RetailNetwork.objects.all()
+    serializer_class = CommentsSerializers
+    queryset = Comments.objects.all()
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        new_retail_network = serializer.save()
-        new_retail_network.user = self.request.user
-        new_retail_network.save()
+        new_comments = serializer.save()
+        new_comments.autor_comment = self.request.user
+        new_comments.save()
 
 
-class RetailNetworkListAPIView(generics.ListAPIView):
+class CommentsListAPIView(generics.ListAPIView):
     """
-    Вывод листа розничныйх сетей.
+    Вывод листа комментариев.
     """
-    serializer_class = RetailNetworkSerializers
-    permission_classes = [IsAuthenticated & ActiveUser]
-    queryset = RetailNetwork.objects.all()
+    serializer_class = CommentsSerializers
+    permission_classes = [AllowAny]
+    queryset = Comments.objects.all()
     pagination_class = Paginator
 
     # Фильтр по определенной стране.
@@ -98,95 +98,35 @@ class RetailNetworkListAPIView(generics.ListAPIView):
     search_fields = ['country']
 
 
-class RetailNetworkRetrieveAPIView(generics.RetrieveAPIView):
+class CommentsRetrieveAPIView(generics.RetrieveAPIView):
     """
-    Вывод конкретной розничной сети.
+    Вывод комментария.
     """
-    serializer_class = RetailNetworkSerializers
-    queryset = RetailNetwork.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser]
+    serializer_class = CommentsSerializers
+    queryset = Comments.objects.all()
+    permission_classes = [AllowAny]
 
 
-class RetailNetworkUpdateAPIView(generics.UpdateAPIView):
+class CommentsUpdateAPIView(generics.UpdateAPIView):
     """
-    Обновление конкретной розничной сети.
+    Обновление комментария.
     """
-    serializer_class = RetailNetworkUpdateSerializers
-    queryset = RetailNetwork.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+    serializer_class = CommentsSerializers
+    queryset = Comments.objects.all()
+    permission_classes = [IsAuthenticated & (Admin | IsOwner)]
 
     def perform_update(self, serializer):
-        new_retail_network = serializer.save()
-        new_retail_network.save()
+        new_comments = serializer.save()
+        new_comments.date_of_editing = datetime.now()
+        new_comments.save()
 
 
-class RetailNetworkDestroyAPIView(generics.DestroyAPIView):
+class CommentsDestroyAPIView(generics.DestroyAPIView):
     """
-    Удаление конкретной розничной сети.
+    Удаление комментария.
     """
-    queryset = RetailNetwork.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
-
-    def perform_destroy(self, instance):
-        instance.delete()
-
-
-class IndividualEntrepreneurCreateAPIView(generics.CreateAPIView):
-    """
-    Создание 'Индивилдеального предпринимателя'.
-    """
-    serializer_class = IndividualEntrepreneurSerializers
-    queryset = IndividualEntrepreneur.objects.all()
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        new_individual_entrepreneur = serializer.save()
-        new_individual_entrepreneur.user = self.request.user
-        new_individual_entrepreneur.save()
-
-
-class IndividualEntrepreneurListAPIView(generics.ListAPIView):
-    """
-    Вывод листа индивилдеальный предпринимателей.
-    """
-    serializer_class = IndividualEntrepreneurSerializers
-    permission_classes = [IsAuthenticated & ActiveUser]
-    queryset = IndividualEntrepreneur.objects.all()
-    pagination_class = Paginator
-
-    # Фильтр по определенной стране.
-    filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter)
-    search_fields = ['country']
-
-
-class IndividualEntrepreneurRetrieveAPIView(generics.RetrieveAPIView):
-    """
-    Вывод конкретного индивилдеального предпринимателя.
-    """
-    serializer_class = IndividualEntrepreneurSerializers
-    queryset = IndividualEntrepreneur.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser]
-
-
-class IndividualEntrepreneurUpdateAPIView(generics.UpdateAPIView):
-    """
-    Обновление конкретного индивилдеального предпринимателя.
-    """
-    serializer_class = IndividualEntrepreneurUpdateSerializers
-    queryset = IndividualEntrepreneur.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
-
-    def perform_update(self, serializer):
-        new_individual_entrepreneur = serializer.save()
-        new_individual_entrepreneur.save()
-
-
-class IndividualEntrepreneurDestroyAPIView(generics.DestroyAPIView):
-    """
-    Удаление конкретного индивилдеального предпринимателя.
-    """
-    queryset = IndividualEntrepreneur.objects.all()
-    permission_classes = [IsAuthenticated & ActiveUser & IsOwner]
+    queryset = Comments.objects.all()
+    permission_classes = [IsAuthenticated & (Admin | IsOwner)]
 
     def perform_destroy(self, instance):
         instance.delete()

@@ -1,89 +1,33 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from django.db.models import QuerySet
-from main.models import Factory, RetailNetwork, IndividualEntrepreneur
+from main.models import Post, Comments
 
 
-@admin.register(Factory)
-class FactoryAdmin(admin.ModelAdmin):
+@admin.register(Comments)
+class CommentsAdmin(admin.ModelAdmin):
     """
-    Класс для вывода в админ панель атрибутов модели 'Забод'.
+    Класс для вывода в админ панель атрибутов модели 'Комментарии'.
     """
-    actions = ['admin_action']
-    list_display = ('name', 'email', 'country', 'city', 'street', 'house_number', 'name_product', 'model',
-                    'market_launch_date', 'debt', 'time_of_creation')
-    list_filter = ('city',)
-    search_fields = ('name', 'name_product')
+    list_display = ('id', 'autors', 'text', 'date_of_creation', 'date_of_editing')
+    list_filter = ('date_of_creation',)
+    search_fields = ('autors', 'date_of_creation')
 
-    @admin.action(description="Очистить задолженность перед поставщиком")
-    def admin_action(self, request, qs: QuerySet):
+    def autors(self, obj):
         """
-        функция для очистки атрибута модели 'Задолжность перед поставщиком.'
-        """
-        qs.update(debt=0)
-
-
-@admin.register(RetailNetwork)
-class RetailNetworkAdmin(admin.ModelAdmin):
-    """
-    Класс для вывода в админ панель атрибутов модели 'Розничная сеть'.
-    """
-    actions = ['admin_action']
-    list_display = ('name', 'email', 'country', 'city', 'street', 'house_number', 'name_product', 'model',
-                    'market_launch_date', 'suppliers', 'debt', 'time_of_creation')
-    list_filter = ('city',)
-    search_fields = ('name', 'name_product')
-
-    def suppliers(self, obj):
-        """
-        Функция для вывода интерактивной ссылки в атрибут 'Поставщики' на привязанную внешним ключом модель.
-        :param obj: Получает атрибут 'Поставщики' из модели 'Розничная сеть'.
+        Функция для вывода интерактивной ссылки в атрибут 'Автор' на привязанную внешним ключом модель.
+        :param obj: Получает атрибут 'Автор' из модели 'Пост'.
         :return: Возвращает интерактивную ссылку на модель.
         """
-        link = reverse("admin:main_factory_change", args=[obj.supplier_retail_network.id])
-        return format_html('<a href="{}">{}</a>', link, obj.supplier_retail_network)
-
-        suppliers.short_description = "supplier_retail_network"
-
-    @admin.action(description="Очистить задолженность перед поставщиком")
-    def admin_action(self, request, qs: QuerySet):
-        """
-        функция для очистки атрибута модели 'Задолжность перед поставщиком'.
-        """
-        qs.update(debt=0)
+        link = reverse("admin:main_post_change", args=[obj.autor.id])
+        return format_html('<a href="{}">{}</a>', link, obj.autor)
 
 
-@admin.register(IndividualEntrepreneur)
-class IndividualEntrepreneurAdmin(admin.ModelAdmin):
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
     """
-    Класс для вывода в админ панель атрибутов модели 'Индивидуальный предприниматель'.
+    Класс для вывода в админ панель атрибутов модели 'Пост'.
     """
-    actions = ['admin_action']
-    list_display = ('name_IE', 'email', 'country', 'city', 'street', 'house_number', 'name_product', 'model',
-                    'market_launch_date', 'suppliers', 'debt', 'time_of_creation')
-    list_filter = ('city',)
-    search_fields = ('name_IE', 'name_product')
-
-    def suppliers(self, obj):
-        """
-        Функция для вывода интерактивной ссылки в атрибут 'Поставщики' на привязанную внешним ключом модель.
-        :param obj: Получает атрибут 'Поставщики' из модели 'Индивидуальный предприниматель'.
-        :return: Возвращает интерактивную ссылку на модель.
-        """
-        if obj.supplier_factory:
-            link = reverse("admin:main_factory_change", args=[obj.supplier_factory.id])
-            return format_html('<a href="{}">{}</a>', link, obj.supplier_factory)
-
-        else:
-            link = reverse("admin:main_retailnetwork_change", args=[obj.supplier_retail_network.id])
-            return format_html('<a href="{}">{}</a>', link, obj.supplier_retail_network)
-
-        suppliers.short_description = "supplier_retail_network"
-
-    @admin.action(description="Очистить задолженность перед поставщиком")
-    def admin_action(self, request, qs: QuerySet):
-        """
-        функция для очистки атрибута модели 'Задолжность перед поставщиком.'
-        """
-        qs.update(debt=0)
+    list_display = ('id', 'title', 'text', 'image', 'autor', 'comments', 'date_of_creation', 'date_of_editing')
+    list_filter = ('date_of_creation',)
+    search_fields = ('title', 'date_of_creation')

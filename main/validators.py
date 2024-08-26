@@ -13,7 +13,7 @@ class PostValidator:
         autor = value.get(self.field)
         title = value.get('title')
         today = date.today()
-        print(autor.date_of_birth)
+        print(autor)
         age = today.year - autor.date_of_birth.year
         list_words = ['ерунда', 'глупость', 'чепуха']
 

@@ -4,8 +4,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from main.models import Post, Comments
 from django_filters import rest_framework as rest_filters
 from main.paginators import Paginator
-from main.permissions import IsOwner, Admin
-from main.serliazers import PostSerializers, CommentsSerializers
+from main.permissions import IsOwner
+from users.permissions import Admin
+from main.serliazers import PostSerializers, PostUpdateSerializers, CommentsSerializers
 
 
 class PostCreateAPIView(generics.CreateAPIView):
@@ -49,7 +50,7 @@ class PostUpdateAPIView(generics.UpdateAPIView):
     """
     Обновление поста.
     """
-    serializer_class = PostSerializers
+    serializer_class = PostUpdateSerializers
     queryset = Post.objects.all()
     permission_classes = [IsAuthenticated & (Admin | IsOwner)]
 
@@ -80,7 +81,7 @@ class CommentsCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         new_comments = serializer.save()
-        new_comments.autor_comment = self.request.user
+        new_comments.autor = self.request.user
         new_comments.save()
 
 

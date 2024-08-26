@@ -1,8 +1,8 @@
 from datetime import datetime
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from main.permissions import Admin, IsOwner
 from users.models import User
+from users.permissions import Admin, IsOwner
 from users.serliazers import UserSerializers
 
 
@@ -25,7 +25,7 @@ class UserListAPIView(generics.ListAPIView):
     """
     serializer_class = UserSerializers
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated & Admin]
+    permission_classes = [IsAuthenticated | Admin]
 
 
 class UserRetrieveAPIView(generics.RetrieveAPIView):
@@ -34,7 +34,7 @@ class UserRetrieveAPIView(generics.RetrieveAPIView):
     """
     serializer_class = UserSerializers
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated & Admin]
+    permission_classes = [IsAuthenticated | Admin]
 
 
 class UserUpdateAPIView(generics.UpdateAPIView):
@@ -43,7 +43,7 @@ class UserUpdateAPIView(generics.UpdateAPIView):
     """
     serializer_class = UserSerializers
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated & (Admin | IsOwner)]
+    permission_classes = [Admin | IsOwner]
 
     def perform_update(self, serializer):
         new_user = serializer.save()

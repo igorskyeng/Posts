@@ -10,14 +10,3 @@ class IsOwner(BasePermission):
             return True
 
         return False
-
-
-class Admin(BasePermission):
-    """
-    Класс проверят является ли пользователь администратором.
-    """
-    def has_permission(self, request, view):
-        if request.user.groups.filter(name='Admin').exists() or request.user.is_superuser:
-            return True
-
-        return False
